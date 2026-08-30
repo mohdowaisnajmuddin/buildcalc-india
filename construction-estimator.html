@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildCalc — Construction Estimator India</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1814;
+    --surface2: #242018;
+    --border: #2e2a22;
+    --accent: #e87c2e;
+    --accent2: #f0a855;
+    --text: #f0ebe0;
+    --muted: #8a8070;
+    --green: #5db87a;
+    --red: #e05555;
+    --cement: #c4b89a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      radial-gradient(ellipse at 20% 20%, rgba(232,124,46,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(93,184,122,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    padding: 40px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 0 100%);
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 6vw, 56px);
+    letter-spacing: 2px;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  h1 span { color: var(--accent); }
+
+  .tagline {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* Main grid */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 640px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Form elements */
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  input[type="number"], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,124,46,0.1);
+  }
+
+  select option { background: var(--surface2); }
+
+  .input-unit {
+    position: relative;
+  }
+
+  .input-unit input { padding-right: 60px; }
+
+  .unit-label {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+  }
+
+  /* Quality selector */
+  .quality-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .quality-btn {
+    padding: 10px 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .quality-btn:hover { border-color: var(--accent); color: var(--text); }
+  .quality-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 700;
+  }
+
+  /* Calculate button */
+  .calc-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: 2px;
+    color: #000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .calc-btn:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(232,124,46,0.3);
+  }
+
+  .calc-btn:active { transform: translateY(0); }
+
+  /* Results */
+  .results-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .results-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--green), transparent);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+
+  .empty-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+
+  .empty-state p {
+    font-size: 13px;
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+  }
+
+  /* Material rows */
+  .material-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    animation: slideIn 0.3s ease forwards;
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .material-info { display: flex; align-items: center; gap: 10px; }
+
+  .material-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .material-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .material-sub {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .material-value {
+    text-align: right;
+  }
+
+  .material-qty {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent2);
+  }
+
+  .material-cost {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Total box */
+  .total-box {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.4s ease 0.3s forwards;
+    opacity: 0;
+  }
+
+  .total-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(232,124,46,0.05) 0%, transparent 60%);
+  }
+
+  .total-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .total-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+
+  .total-range {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .total-range span { color: var(--text); }
+
+  /* Cost breakdown */
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    animation: slideIn 0.3s ease 0.4s forwards;
+    opacity: 0;
+  }
+
+  .breakdown-item { text-align: center; }
+  .breakdown-item .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .breakdown-item .lbl { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* PDF Button */
+  .pdf-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 16px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    animation: slideIn 0.3s ease 0.5s forwards;
+    opacity: 0;
+  }
+
+  .pdf-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(232,124,46,0.05);
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    margin-top: 32px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    border-left: 3px solid var(--muted);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* Feedback Banner */
+  .feedback-banner {
+    margin-top: 28px;
+    padding: 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    border-left: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .feedback-left { display: flex; align-items: center; gap: 14px; }
+  .feedback-emoji { font-size: 28px; flex-shrink: 0; }
+  .feedback-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .feedback-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.3px; }
+  .feedback-btns { display: flex; gap: 10px; flex-shrink: 0; }
+  .fb-btn {
+    padding: 10px 18px;
+    border-radius: 2px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .fb-yes {
+    background: rgba(93,184,122,0.1);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .fb-yes:hover { background: rgba(93,184,122,0.2); transform: translateY(-1px); }
+  .fb-suggest {
+    background: rgba(232,124,46,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .fb-suggest:hover { background: rgba(232,124,46,0.2); transform: translateY(-1px); }
+  .feedback-thanks {
+    text-align: center;
+    padding: 16px;
+    font-size: 14px;
+    color: var(--green);
+    font-weight: 500;
+    animation: slideIn 0.3s ease forwards;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 32px 0;
+    margin-top: 40px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  footer span { color: var(--accent); }
+
+  /* City badge */
+  .city-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+  }
+
+  .city-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* Highlight numbers on result update */
+  @keyframes highlight {
+    0% { color: var(--accent2); }
+    100% { color: var(--accent2); }
+  }
+
+  /* Toggle switch */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .toggle-row:last-of-type { border-bottom: none; margin-bottom: 0; }
+  .toggle-label { font-size: 12px; font-weight: 500; color: var(--text); }
+  .toggle-sub { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: 0.3px; }
+  .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 22px; transition: 0.2s;
+  }
+  .slider:before {
+    content: ''; position: absolute;
+    width: 14px; height: 14px; left: 3px; bottom: 3px;
+    background: var(--muted); border-radius: 50%; transition: 0.2s;
+  }
+  input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+  input:checked + .slider:before { transform: translateX(18px); background: #000; }
+
+  /* GST line in total */
+  .gst-line {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-top: 1px dashed var(--border); margin-top: 8px;
+    font-size: 12px; color: var(--muted);
+  }
+  .gst-line .gval { font-family: 'JetBrains Mono', monospace; color: var(--accent2); font-size: 13px; }
+  .grand-total-line {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--accent);
+  }
+  .grand-total-line .glabel { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .grand-total-line .gval { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--green); letter-spacing: 1px; }
+
+  /* WhatsApp button */
+  .wa-btn {
+    width: 100%;
+    padding: 12px;
+    background: #1a3a1a;
+    border: 1px solid #2d5e2d;
+    border-radius: 2px;
+    color: #5db87a;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    animation: slideIn 0.3s ease 0.6s forwards;
+    opacity: 0;
+  }
+  .wa-btn:hover { background: #1f4a1f; border-color: #5db87a; }
+
+  /* Stage breakdown & profit sections */
+  .extra-section {
+    margin-top: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .extra-toggle {
+    width: 100%; background: none; border: none;
+    padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; color: var(--text); transition: background 0.2s;
+  }
+  .extra-toggle:hover { background: var(--surface2); }
+  .extra-toggle-left { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; }
+  .extra-arrow { font-size: 10px; color: var(--muted); transition: transform 0.3s; }
+  .extra-arrow.open { transform: rotate(180deg); }
+  .extra-body { display: none; padding: 0 20px 20px; border-top: 1px solid var(--border); }
+  .extra-body.open { display: block; }
+
+  /* Stage rows */
+  .stage-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+    animation: slideIn 0.3s ease forwards; opacity: 0;
+  }
+  .stage-row:last-child { border-bottom: none; }
+  .stage-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: #000;
+    font-family: 'Bebas Neue', sans-serif; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .stage-info { flex: 1; }
+  .stage-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .stage-pct { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stage-amount { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--accent2); }
+
+  /* Profit calculator */
+  .profit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media(max-width:500px){ .profit-grid{ grid-template-columns:1fr; } }
+  .profit-result-box {
+    margin-top: 16px; padding: 16px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 2px;
+  }
+  .profit-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; }
+  .profit-row .pr-label { color: var(--muted); }
+  .profit-row .pr-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); }
+  .profit-row.highlight .pr-val { color: var(--green); font-size: 16px; font-weight: 700; }
+  .profit-row.highlight .pr-label { color: var(--text); font-weight: 600; }
+
+  /* Editable Rates */
+  .rates-section {
+    margin-top: 28px;
+  }
+
+  .rates-toggle {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    color: var(--text);
+  }
+
+  .rates-toggle:hover { border-color: var(--accent); }
+
+  .rates-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .rates-toggle-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  .toggle-arrow {
+    transition: transform 0.3s;
+    font-size: 10px;
+  }
+
+  .toggle-arrow.open { transform: rotate(180deg); }
+
+  .rates-body {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 2px 2px;
+    padding: 20px;
+  }
+
+  .rates-body.open { display: block; }
+
+  .rates-note {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 18px;
+    line-height: 1.7;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-left: 2px solid var(--accent);
+    letter-spacing: 0.3px;
+  }
+
+  .rates-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 500px) { .rates-grid { grid-template-columns: 1fr; } }
+
+  .rate-item label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .rate-default {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    cursor: help;
+  }
+
+  .rates-reset {
+    margin-top: 16px;
+    padding: 10px;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .rates-reset:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">🏗</div>
+      <div>
+        <h1>Build<span>Calc</span></h1>
+      </div>
+    </div>
+    <p class="tagline">Construction Cost Estimator — India</p>
+  </header>
+
+  <div class="city-badge">
+    <div class="city-dot"></div>
+    Live rates — Hyderabad, Telangana
+  </div>
+
+  <div class="main-grid">
+
+    <!-- INPUT FORM -->
+    <div class="card">
+      <div class="card-title">📐 Project Details</div>
+
+      <div class="form-group">
+        <label>Plot / Built-up Area</label>
+        <div class="input-unit">
+          <input type="number" id="area" placeholder="1200" min="100" max="100000">
+          <span class="unit-label">sq ft</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Number of Floors</label>
+        <div class="input-unit">
+          <input type="number" id="floors" placeholder="2" min="1" max="10" value="1">
+          <span class="unit-label">floors</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Construction Type</label>
+        <select id="type">
+          <option value="rcc">RCC Frame Structure</option>
+          <option value="loadbearing">Load Bearing Structure</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Finish Quality</label>
+        <div class="quality-grid">
+          <div class="quality-btn" data-q="basic" onclick="setQuality('basic', this)">Basic</div>
+          <div class="quality-btn active" data-q="standard" onclick="setQuality('standard', this)">Standard</div>
+          <div class="quality-btn" data-q="premium" onclick="setQuality('premium', this)">Premium</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>City</label>
+        <select id="city">
+          <option value="hyderabad">Hyderabad</option>
+          <option value="bangalore">Bangalore</option>
+          <option value="mumbai">Mumbai</option>
+          <option value="delhi">Delhi NCR</option>
+          <option value="chennai">Chennai</option>
+          <option value="pune">Pune</option>
+        </select>
+      </div>
+
+      <!-- Toggles -->
+      <div style="margin-bottom:20px;">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Include Wastage Factor</div>
+            <div class="toggle-sub">+5–15% extra materials for site wastage & breakage</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-wastage" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Include GST (18%)</div>
+            <div class="toggle-sub">On materials — as per current GST slabs</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-gst">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Black Cotton Soil</div>
+            <div class="toggle-sub">Adds ~30% to foundation cost (common in Hyderabad)</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-soil">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">⚡ CALCULATE ESTIMATE</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-card" id="results-card">
+      <div class="card-title">📊 Material Estimate</div>
+
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🧱</div>
+        <p>Enter your project details and hit Calculate to get an instant material & cost estimate.</p>
+      </div>
+
+      <div id="results-content" style="display:none;">
+        <div id="materials-list"></div>
+        <div class="total-box" id="total-box">
+          <div class="total-label">Estimated Total Cost</div>
+          <div class="total-amount" id="total-cost">₹0</div>
+          <div class="total-range" id="cost-range"></div>
+          <div class="breakdown-row">
+            <div class="breakdown-item">
+              <div class="val" id="mat-cost">₹0</div>
+              <div class="lbl">Materials</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="val" id="lab-cost">₹0</div>
+              <div class="lbl">Labour</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="val" id="misc-cost">₹0</div>
+              <div class="lbl">Misc</div>
+            </div>
+          </div>
+          <div class="gst-line" id="gst-line" style="display:none;">
+            <span>+ GST on Materials (18%)</span>
+            <span class="gval" id="gst-amount">₹0</span>
+          </div>
+          <div class="grand-total-line" id="grand-total-line" style="display:none;">
+            <span class="glabel">Grand Total (incl. GST)</span>
+            <span class="gval" id="grand-total">₹0</span>
+          </div>
+        </div>
+        <button class="pdf-btn" onclick="printEstimate()">📄 Download / Print Estimate</button>
+        <button class="wa-btn" onclick="shareWhatsApp()">💬 Share on WhatsApp</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STAGE-WISE PAYMENT SCHEDULE -->
+  <div class="extra-section" id="stage-section" style="display:none;">
+    <button class="extra-toggle" onclick="toggleExtra('stage')">
+      <div class="extra-toggle-left">📅 Stage-wise Payment Schedule</div>
+      <span class="extra-arrow" id="arrow-stage">▼</span>
+    </button>
+    <div class="extra-body" id="body-stage">
+      <p style="font-size:12px;color:var(--muted);padding:14px 0 6px;line-height:1.7;">Standard payment milestones contractors use. Show this to your client upfront to avoid disputes.</p>
+      <div id="stage-list"></div>
+    </div>
+  </div>
+
+  <!-- PROFIT MARGIN CALCULATOR -->
+  <div class="extra-section" id="profit-section" style="display:none;">
+    <button class="extra-toggle" onclick="toggleExtra('profit')">
+      <div class="extra-toggle-left">💰 Contractor Profit Margin Calculator</div>
+      <span class="extra-arrow" id="arrow-profit">▼</span>
+    </button>
+    <div class="extra-body" id="body-profit">
+      <p style="font-size:12px;color:var(--muted);padding:14px 0 12px;line-height:1.7;">Calculate how much to quote your client and what your profit will be.</p>
+      <div class="profit-grid">
+        <div class="form-group">
+          <label>Your Profit Margin</label>
+          <div class="input-unit">
+            <input type="number" id="profit-pct" placeholder="15" min="1" max="60" oninput="calcProfit()">
+            <span class="unit-label">%</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Overhead / Admin Cost</label>
+          <div class="input-unit">
+            <input type="number" id="overhead-pct" placeholder="5" min="0" max="30" oninput="calcProfit()">
+            <span class="unit-label">%</span>
+          </div>
+        </div>
+      </div>
+      <div class="profit-result-box" id="profit-result">
+        <div class="profit-row"><span class="pr-label">Your Cost (from estimate)</span><span class="pr-val" id="pr-base">—</span></div>
+        <div class="profit-row"><span class="pr-label">Overhead Added</span><span class="pr-val" id="pr-overhead">—</span></div>
+        <div class="profit-row"><span class="pr-label">Your Profit</span><span class="pr-val" id="pr-profit">—</span></div>
+        <div class="profit-row highlight"><span class="pr-label">Quote to Client</span><span class="pr-val" id="pr-quote">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDITABLE RATES SECTION -->
+  <div class="rates-section">
+    <div class="rates-toggle" onclick="toggleRates()">
+      <div class="rates-toggle-left">
+        ✏️ &nbsp; <span>Edit Material Rates</span>
+        <span style="font-size:11px;color:var(--muted);font-weight:400;">— override with your local market prices</span>
+      </div>
+      <div class="rates-toggle-right">
+        Optional &nbsp;<span class="toggle-arrow" id="toggle-arrow">▼</span>
+      </div>
+    </div>
+
+    <div class="rates-body" id="rates-body">
+      <div class="rates-note">
+        💡 Default values are based on approximate Hyderabad market rates (2024–25). Enter your actual local prices to get a more accurate estimate. Hover over the grey tag to see the default value.
+      </div>
+
+      <div class="rates-grid">
+        <div class="rate-item form-group">
+          <label>
+            Cement (per 50kg bag)
+            <span class="rate-default" title="Default: ₹380">Default ₹380</span>
+          </label>
+          <div class="input-unit">
+            <input type="number" id="rate-cement" placeholder="380" min="100">
+            <span class="unit-label">₹/bag</span>
+          </div>
+        </div>
+
+        <div class="rate-item form-group">
+          <label>
+            River Sand (per brass)
+            <span class="rate-default" title="Default: ₹4500">Default ₹4500</span>
+          </label>
+          <div class="input-unit">
+            <input type="number" id="rate-sand" placeholder="4500" min="500">
+            <span class="unit-label">₹/brass</span>
+          </div>
+        </div>
+
+        <div class="rate-item form-group">
+          <label>
+            Bricks (per brick)
+            <span class="rate-default" title="Default: ₹8">Default ₹8</span>
+          </label>
+          <div class="input-unit">
+            <input type="number" id="rate-bricks" placeholder="8" min="1">
+            <span class="unit-label">₹/brick</span>
+          </div>
+        </div>
+
+        <div class="rate-item form-group">
+          <label>
+            TMT Steel (per kg)
+            <span class="rate-default" title="Default: ₹72">Default ₹72</span>
+          </label>
+          <div class="input-unit">
+            <input type="number" id="rate-steel" placeholder="72" min="20">
+            <span class="unit-label">₹/kg</span>
+          </div>
+        </div>
+
+        <div class="rate-item form-group">
+          <label>
+            Coarse Aggregate (per brass)
+            <span class="rate-default" title="Default: ₹3800">Default ₹3800</span>
+          </label>
+          <div class="input-unit">
+            <input type="number" id="rate-aggregate" placeholder="3800" min="500">
+            <span class="unit-label">₹/brass</span>
+          </div>
+        </div>
+
+        <div class="rate-item form-group">
+          <label>
+            Labour Rate (per sq ft)
+            <span class="rate-default" title="Default: auto-calculated">Auto</span>
+          </label>
+          <div class="input-unit">
+            <input type="number" id="rate-labour" placeholder="Leave blank for auto" min="50">
+            <span class="unit-label">₹/sqft</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="rates-reset" onclick="resetRates()">↺ Reset to Default Rates</button>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ <strong>Disclaimer:</strong> This estimate is indicative only. Actual costs may vary based on current market rates, site conditions, architect/contractor specifications, and local government levies. Always get 2–3 contractor quotes before finalising your budget. Rates are based on average Hyderabad/South India market data (2024–25).
+  </div>
+
+  <!-- FEEDBACK BANNER -->
+  <div class="feedback-banner">
+    <div class="feedback-left">
+      <div class="feedback-emoji">💬</div>
+      <div>
+        <div class="feedback-title">Was this useful? Tell us what to build next.</div>
+        <div class="feedback-sub">Your feedback shapes the next version of BuildCalc — takes 30 seconds.</div>
+      </div>
+    </div>
+    <div class="feedback-btns">
+      <button class="fb-btn fb-yes" onclick="sendFeedback('yes')">👍 Yes, useful!</button>
+      <button class="fb-btn fb-suggest" onclick="sendFeedback('suggest')">🛠 Suggest a feature</button>
+    </div>
+  </div>
+
+  <footer>
+    Built with ❤️ for Indian contractors &amp; civil engineers &nbsp;|&nbsp; <span>BuildCalc v1.0</span>
+  </footer>
+</div>
+
+<script>
+  // ── Toggles ──────────────────────────────────────────────
+  function toggleRates() {
+    const body = document.getElementById('rates-body');
+    const arrow = document.getElementById('toggle-arrow');
+    body.classList.toggle('open');
+    arrow.classList.toggle('open');
+  }
+
+  function toggleExtra(id) {
+    const body = document.getElementById('body-' + id);
+    const arrow = document.getElementById('arrow-' + id);
+    body.classList.toggle('open');
+    arrow.classList.toggle('open');
+  }
+
+  function resetRates() {
+    ['cement','sand','bricks','steel','aggregate','labour'].forEach(k => {
+      const el = document.getElementById('rate-' + k);
+      if (el) el.value = '';
+    });
+  }
+
+  function getCustomRates() {
+    const get = (id, def) => {
+      const v = parseFloat(document.getElementById(id)?.value);
+      return (!isNaN(v) && v > 0) ? v : def;
+    };
+    return {
+      cement:    get('rate-cement', 380),
+      sand:      get('rate-sand', 4500),
+      bricks:    get('rate-bricks', 8),
+      steel:     get('rate-steel', 72),
+      aggregate: get('rate-aggregate', 3800),
+      labour:    get('rate-labour', null),
+    };
+  }
+
+  let selectedQuality = 'standard';
+
+  function setQuality(q, el) {
+    selectedQuality = q;
+    document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── Constants ─────────────────────────────────────────────
+  const cityMultiplier = {
+    hyderabad: 1.0, bangalore: 1.08, mumbai: 1.35,
+    delhi: 1.15, chennai: 1.05, pune: 1.10
+  };
+
+  const qualityRate = { basic: 1650, standard: 2100, premium: 3200 };
+
+  const materialBase = {
+    cement:    { qty: 2.5,  unit: 'bags (50kg)',     icon: '🪨', color: '#6b7a8d', label: 'Cement',           wastage: 0.05 },
+    sand:      { qty: 0.45, unit: 'brass (100 cft)', icon: '🏜️', color: '#c4a35a', label: 'River Sand',       wastage: 0.15 },
+    bricks:    { qty: 650,  unit: 'bricks',          icon: '🧱', color: '#c4623a', label: 'Bricks / Blocks',  wastage: 0.10 },
+    steel:     { qty: 4.5,  unit: 'kg',              icon: '⚙️', color: '#7a8a9a', label: 'TMT Steel',        wastage: 0.03 },
+    aggregate: { qty: 0.3,  unit: 'brass',           icon: '🪨', color: '#8a7a6a', label: 'Coarse Aggregate', wastage: 0.08 },
+    water:     { qty: 450,  unit: 'litres',          icon: '💧', color: '#4a8aaa', label: 'Water (curing)',   wastage: 0    },
+  };
+
+  const qualityMultiplierMat = { basic: 0.85, standard: 1.0, premium: 1.3 };
+
+  const stageData = [
+    { name: 'Foundation & Plinth',    pct: 0.15 },
+    { name: 'Superstructure (Slab)',  pct: 0.25 },
+    { name: 'Brickwork & Lintel',     pct: 0.20 },
+    { name: 'Plastering & Flooring',  pct: 0.20 },
+    { name: 'Doors, Windows & Elect.',pct: 0.12 },
+    { name: 'Final Finishing',        pct: 0.08 },
+  ];
+
+  function formatINR(n) {
+    if (n >= 10000000) return '₹' + (n / 10000000).toFixed(2) + ' Cr';
+    if (n >= 100000)   return '₹' + (n / 100000).toFixed(2) + ' L';
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+  }
+
+  // ── Main Calculate ─────────────────────────────────────────
+  function calculate() {
+    const area    = parseFloat(document.getElementById('area').value);
+    const floors  = parseInt(document.getElementById('floors').value) || 1;
+    const city    = document.getElementById('city').value;
+    const type    = document.getElementById('type').value;
+    const useWastage = document.getElementById('toggle-wastage').checked;
+    const useGST     = document.getElementById('toggle-gst').checked;
+    const blackSoil  = document.getElementById('toggle-soil').checked;
+
+    if (!area || area < 100) { alert('Please enter a valid area (minimum 100 sq ft)'); return; }
+
+    const totalArea  = area * floors;
+    const cMult      = cityMultiplier[city];
+    const qMult      = qualityMultiplierMat[selectedQuality];
+    const typeMult   = type === 'loadbearing' ? 0.88 : 1.0;
+    const soilMult   = blackSoil ? 1.12 : 1.0; // adds ~12% overall for deeper foundation
+    const ratePerSqFt = qualityRate[selectedQuality] * cMult * soilMult;
+    const customRates = getCustomRates();
+
+    const totalCost = totalArea * ratePerSqFt;
+    const labRate   = customRates.labour ? customRates.labour * totalArea : totalCost * 0.32;
+    const matCost   = totalCost * 0.58;
+    const labCost   = labRate;
+    const miscCost  = totalCost * 0.10;
+    const gstAmt    = useGST ? matCost * 0.18 : 0;
+    const grandTotal = totalCost + gstAmt;
+
+    // Material rows
+    const rateMap = {
+      cement: customRates.cement, sand: customRates.sand,
+      bricks: customRates.bricks, steel: customRates.steel,
+      aggregate: customRates.aggregate, water: 0
+    };
+    const units = totalArea / 100;
+    const html = Object.entries(materialBase).map(([key, mat], i) => {
+      let rawQty = mat.qty * units * qMult * typeMult;
+      if (useWastage && mat.wastage) rawQty *= (1 + mat.wastage);
+      const qty = key === 'bricks' ? Math.round(rawQty) : parseFloat(rawQty.toFixed(1));
+      const unitCost = rateMap[key] ?? 0;
+      const isCustom = (key !== 'water') && (parseFloat(document.getElementById('rate-' + key)?.value) > 0);
+      const wastageTag = useWastage && mat.wastage ? ` <span style="font-size:9px;color:var(--accent);background:rgba(232,124,46,0.1);padding:1px 4px;border-radius:2px;">+${mat.wastage*100}% wastage</span>` : '';
+      const cost = unitCost > 0 ? formatINR(qty * unitCost) + (isCustom ? ' ✎' : '') : 'Sourced';
+      return `<div class="material-row" style="animation-delay:${i*0.05}s">
+        <div class="material-info">
+          <div class="material-icon" style="background:${mat.color}22;border:1px solid ${mat.color}44">${mat.icon}</div>
+          <div>
+            <div class="material-name">${mat.label}${wastageTag}</div>
+            <div class="material-sub">${mat.unit}</div>
+          </div>
+        </div>
+        <div class="material-value">
+          <div class="material-qty">${qty.toLocaleString('en-IN')}</div>
+          <div class="material-cost">${cost}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Show results
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('results-content').style.display = 'block';
+    document.getElementById('materials-list').innerHTML = html;
+    document.getElementById('total-cost').textContent = formatINR(totalCost);
+    document.getElementById('cost-range').innerHTML = `Range: <span>${formatINR(totalCost*0.9)}</span> – <span>${formatINR(totalCost*1.12)}</span>`;
+    document.getElementById('mat-cost').textContent = formatINR(matCost);
+    document.getElementById('lab-cost').textContent = formatINR(labCost);
+    document.getElementById('misc-cost').textContent = formatINR(miscCost);
+
+    // GST
+    if (useGST) {
+      document.getElementById('gst-line').style.display = 'flex';
+      document.getElementById('grand-total-line').style.display = 'flex';
+      document.getElementById('gst-amount').textContent = formatINR(gstAmt);
+      document.getElementById('grand-total').textContent = formatINR(grandTotal);
+    } else {
+      document.getElementById('gst-line').style.display = 'none';
+      document.getElementById('grand-total-line').style.display = 'none';
+    }
+
+    // Stage breakdown
+    const stageHTML = stageData.map((s, i) => `
+      <div class="stage-row" style="animation-delay:${i*0.07}s">
+        <div class="stage-num">${i+1}</div>
+        <div class="stage-info">
+          <div class="stage-name">${s.name}</div>
+          <div class="stage-pct">${(s.pct*100).toFixed(0)}% of total</div>
+        </div>
+        <div class="stage-amount">${formatINR(grandTotal * s.pct)}</div>
+      </div>`).join('');
+    document.getElementById('stage-list').innerHTML = stageHTML;
+    document.getElementById('stage-section').style.display = 'block';
+    document.getElementById('profit-section').style.display = 'block';
+
+    // Store
+    window._lastEstimate = {
+      area, floors, totalArea, city, quality: selectedQuality, type,
+      totalCost, matCost, labCost, miscCost, ratePerSqFt,
+      gstAmt, grandTotal, useGST, useWastage, blackSoil
+    };
+
+    calcProfit();
+  }
+
+  // ── Profit Calculator ──────────────────────────────────────
+  function calcProfit() {
+    const e = window._lastEstimate;
+    if (!e) return;
+    const profitPct   = parseFloat(document.getElementById('profit-pct').value) || 0;
+    const overheadPct = parseFloat(document.getElementById('overhead-pct').value) || 0;
+    const base        = e.grandTotal || e.totalCost;
+    const overhead    = base * (overheadPct / 100);
+    const profit      = (base + overhead) * (profitPct / 100);
+    const quote       = base + overhead + profit;
+    document.getElementById('pr-base').textContent     = formatINR(base);
+    document.getElementById('pr-overhead').textContent = formatINR(overhead);
+    document.getElementById('pr-profit').textContent   = formatINR(profit);
+    document.getElementById('pr-quote').textContent    = formatINR(quote);
+  }
+
+  // ── WhatsApp Share ─────────────────────────────────────────
+  function shareWhatsApp() {
+    const e = window._lastEstimate;
+    if (!e) { alert('Please calculate first'); return; }
+    const cityNames = { hyderabad:'Hyderabad', bangalore:'Bangalore', mumbai:'Mumbai', delhi:'Delhi NCR', chennai:'Chennai', pune:'Pune' };
+    const profitPct = parseFloat(document.getElementById('profit-pct').value) || 0;
+    const overheadPct = parseFloat(document.getElementById('overhead-pct').value) || 0;
+    const base = e.grandTotal || e.totalCost;
+    const overhead = base * (overheadPct/100);
+    const profit = (base+overhead)*(profitPct/100);
+    const quote = base + overhead + profit;
+
+    const msg = `🏗 *BuildCalc — Construction Estimate*
+━━━━━━━━━━━━━━━━
+📍 Location: ${cityNames[e.city]}
+📐 Area: ${e.area} sq ft × ${e.floors} floor(s) = ${e.totalArea} sq ft
+🏠 Type: ${e.type === 'rcc' ? 'RCC Frame' : 'Load Bearing'}
+✨ Finish: ${e.quality.charAt(0).toUpperCase()+e.quality.slice(1)}
+${e.blackSoil ? '🟤 Black Cotton Soil: Yes\n' : ''}${e.useWastage ? '♻️ Wastage Factor: Included\n' : ''}
+━━━━━━━━━━━━━━━━
+💰 *Cost Breakdown*
+Materials: ${formatINR(e.matCost)}
+Labour:    ${formatINR(e.labCost)}
+Misc:      ${formatINR(e.miscCost)}
+${e.useGST ? `GST (18%): ${formatINR(e.gstAmt)}\n` : ''}
+*Total: ${formatINR(e.grandTotal || e.totalCost)}*
+${profitPct > 0 ? `\n💼 *Quote to Client: ${formatINR(quote)}*` : ''}
+━━━━━━━━━━━━━━━━
+_Generated by BuildCalc — Free Construction Estimator_`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  // ── Print ──────────────────────────────────────────────────
+  function printEstimate() {
+    if (!window._lastEstimate) { alert('Please calculate first'); return; }
+    const e = window._lastEstimate;
+    const cityNames = { hyderabad:'Hyderabad', bangalore:'Bangalore', mumbai:'Mumbai', delhi:'Delhi NCR', chennai:'Chennai', pune:'Pune' };
+    const w = window.open('', '_blank');
+    w.document.write(`<html><head><title>BuildCalc Estimate</title>
+      <style>
+        body{font-family:Arial,sans-serif;padding:40px;color:#222;max-width:700px;margin:0 auto}
+        h1{font-size:28px;margin-bottom:4px}.sub{color:#666;font-size:14px;margin-bottom:24px}
+        table{width:100%;border-collapse:collapse;margin:20px 0}
+        th{background:#f0f0f0;padding:10px 14px;text-align:left;font-size:13px}
+        td{padding:10px 14px;border-bottom:1px solid #eee;font-size:14px}
+        .total{background:#fff8f0;border:2px solid #e8821e;border-radius:6px;padding:20px;margin-top:24px}
+        .total h2{margin:0 0 6px;color:#e8821e}.note{font-size:12px;color:#888;margin-top:24px;line-height:1.6}
+        .logo{font-size:22px;font-weight:bold;color:#e8821e}
+        .stages td:last-child{font-weight:600;color:#e8821e}
+      </style></head><body>
+      <div class="logo">🏗 BuildCalc</div>
+      <h1>Construction Cost Estimate</h1>
+      <div class="sub">Generated on ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</div>
+      <table>
+        <tr><th>Parameter</th><th>Details</th></tr>
+        <tr><td>Plot Area</td><td>${e.area} sq ft</td></tr>
+        <tr><td>Floors</td><td>${e.floors}</td></tr>
+        <tr><td>Total Built-up Area</td><td>${e.totalArea} sq ft</td></tr>
+        <tr><td>Location</td><td>${cityNames[e.city]}</td></tr>
+        <tr><td>Finish Quality</td><td>${e.quality.charAt(0).toUpperCase()+e.quality.slice(1)}</td></tr>
+        <tr><td>Construction Type</td><td>${e.type==='rcc'?'RCC Frame Structure':'Load Bearing'}</td></tr>
+        <tr><td>Wastage Factor</td><td>${e.useWastage?'Included':'Not included'}</td></tr>
+        <tr><td>Black Cotton Soil</td><td>${e.blackSoil?'Yes (+12% foundation cost)':'No'}</td></tr>
+      </table>
+      <table>
+        <tr><th>Cost Breakdown</th><th>Amount</th></tr>
+        <tr><td>Material Cost</td><td>${formatINR(e.matCost)}</td></tr>
+        <tr><td>Labour Cost</td><td>${formatINR(e.labCost)}</td></tr>
+        <tr><td>Miscellaneous</td><td>${formatINR(e.miscCost)}</td></tr>
+        ${e.useGST?`<tr><td>GST on Materials (18%)</td><td>${formatINR(e.gstAmt)}</td></tr>`:''}
+      </table>
+      <table class="stages">
+        <tr><th>Payment Stage</th><th>%</th><th>Amount</th></tr>
+        ${stageData.map(s=>`<tr><td>${s.name}</td><td>${(s.pct*100).toFixed(0)}%</td><td>${formatINR((e.grandTotal||e.totalCost)*s.pct)}</td></tr>`).join('')}
+      </table>
+      <div class="total">
+        <h2>Total Estimated Cost</h2>
+        <div style="font-size:28px;font-weight:bold">${formatINR(e.grandTotal||e.totalCost)}</div>
+        <div style="font-size:13px;color:#888;margin-top:6px">Range: ${formatINR((e.grandTotal||e.totalCost)*0.9)} – ${formatINR((e.grandTotal||e.totalCost)*1.12)}</div>
+      </div>
+      <div class="note">⚠️ This estimate is indicative only. Actual costs may vary based on market rates, site conditions, and contractor specifications. Always get multiple quotes.<br><br>Generated by BuildCalc — Free Construction Estimator India</div>
+      </body></html>`);
+    w.document.close(); w.print();
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+
+  function sendFeedback(type) {
+    const banner = document.querySelector('.feedback-banner');
+    let msg = '';
+    if (type === 'yes') {
+      msg = `Hi! I tried BuildCalc and found it useful 👍. Keep building!`;
+      banner.innerHTML = `<div class="feedback-thanks">🎉 Thank you! Your feedback means a lot. We'll keep building!</div>`;
+    } else {
+      msg = `Hi! I tried BuildCalc and have a suggestion for a new feature:`;
+      banner.innerHTML = `<div class="feedback-thanks">💬 Opening WhatsApp... share your idea with us!</div>`;
+    }
+    setTimeout(() => {
+      // Replace with your WhatsApp number (with country code, no + or spaces)
+      const phone = '919133040502';
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }, 600);
+  }
+</script>
+
+</body>
+</html>
